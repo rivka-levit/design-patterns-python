@@ -67,23 +67,63 @@ class CurrentConditionsDisplay(AbstractObserver, AbstractDisplayElement):
         self.weather_data.register_observer(self)
         self.temperature = None
         self.humidity = None
-        self.pressure = None
 
     def update(self, temp: float, humidity: float, pressure: float):
         self.temperature = temp
         self.humidity = humidity
-        self.pressure = pressure
         self.display()
 
     def display(self):
-        output = (f'Current conditions: \n'
-                  f'Temperature: {self.temperature} F\n'
-                  f'Humidity: {self.humidity} %\n'
-                  f'Pressure: {self.pressure}')
+        output = (f'Current conditions: {self.temperature} F degrees and '
+                  f'{self.humidity}% humidity')
         print(output)
+
+
+class HeatIndexDisplay(AbstractObserver, AbstractDisplayElement):
+
+    def __init__(self, data_source: AbstractWeatherData | None = None):
+        if data_source is None:
+            data_source = WeatherData()
+        self.weather_data = data_source
+        self.weather_data.register_observer(self)
+        self.t = None
+        self.rh = None
+        self.heat_index = None
+
+    def update(self, temp: float, humidity: float, pressure: float):
+        self.t = temp
+        self.rh = humidity
+
+        self.heat_index = ((16.923 + (0.185212 * self.t) + (5.37941 * self.rh)
+                            - (0.100254 * self.t * self.rh) +
+                            (0.00941695 * (self.t * self.t)) +
+                            (0.00728898 * (self.rh * self.rh)) +
+                            (0.000345372 * (self.t * self.t * self.rh)) -
+                            (0.000814971 * (self.t * self.rh * self.rh)) +
+                            (0.0000102102 * (self.t * self.t * self.rh *
+                                             self.rh)) -
+                            (0.000038646 * (self.t * self.t * self.t)) +
+                            (0.0000291583 * (self.rh * self.rh * self.rh)) +
+                            (0.00000142721 * (self.t * self.t * self.t *
+                                              self.rh)) +
+                            (0.000000197483 * (self.t * self.rh * self.rh *
+                                               self.rh)) -
+                            (0.0000000218429 * (self.t * self.t * self.t *
+                                                self.rh * self.rh)) +
+                            0.000000000843296 * (self.t * self.t * self.rh *
+                                                 self.rh * self.rh)) -
+                           (0.0000000000481975 * (self.t * self.t * self.t *
+                                                  self.rh * self.rh *
+                                                  self.rh)))
+
+        self.display()
+
+    def display(self):
+        print(f'Heat index is {round(self.heat_index, 5)}')
 
 
 if __name__ == '__main__':
     data_src = WeatherData()
-    disp_element = CurrentConditionsDisplay(data_src)
-    data_src.set_measurements(80, 65, 30.4)
+    cur_cond = CurrentConditionsDisplay(data_src)
+    heat_ind = HeatIndexDisplay(data_src)
+    data_src.set_measurements(80, 65, 32.7)
