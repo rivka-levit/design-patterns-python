@@ -2,13 +2,15 @@ from abc import ABC, abstractmethod
 
 
 class AbstractObserver(ABC):
+    """Observer interface."""
 
     @abstractmethod
-    def update(self, temp: float, humidity: float, pressure: float):
+    def update(self):
         pass
 
 
 class AbstractWeatherData(ABC):
+    """Subject interface."""
 
     @abstractmethod
     def register_observer(self, observer: AbstractObserver):
@@ -46,7 +48,16 @@ class WeatherData(AbstractWeatherData):
 
     def notify_observers(self):
         for observer in self._observers:
-            observer.update(self.temperature, self.humidity, self.pressure)
+            observer.update()
+
+    def get_temperature(self):
+        return self.temperature
+
+    def get_humidity(self):
+        return self.humidity
+
+    def get_pressure(self):
+        return self.pressure
 
     def measurements_changed(self):
         self.notify_observers()
@@ -68,9 +79,9 @@ class CurrentConditionsDisplay(AbstractObserver, AbstractDisplayElement):
         self.temperature = None
         self.humidity = None
 
-    def update(self, temp: float, humidity: float, pressure: float):
-        self.temperature = temp
-        self.humidity = humidity
+    def update(self):
+        self.temperature = self.weather_data.get_temperature()
+        self.humidity = self.weather_data.get_humidity()
         self.display()
 
     def display(self):
@@ -90,9 +101,9 @@ class HeatIndexDisplay(AbstractObserver, AbstractDisplayElement):
         self.rh = None
         self.heat_index = None
 
-    def update(self, temp: float, humidity: float, pressure: float):
-        self.t = temp
-        self.rh = humidity
+    def update(self):
+        self.t = self.weather_data.get_temperature()
+        self.rh = self.weather_data.get_humidity()
 
         self.heat_index = ((16.923 + (0.185212 * self.t) + (5.37941 * self.rh)
                             - (0.100254 * self.t * self.rh) +
