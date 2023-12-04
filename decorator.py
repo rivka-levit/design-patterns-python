@@ -19,8 +19,21 @@ class Beverage(ABC):
 class DarkRoast(Beverage):
     """Concrete component."""
 
-    description = 'Dark Roast'
+    description = 'Dark Roast Coffee'
     price = 0.99
+
+    def cost(self):
+        return self.price
+
+    def get_description(self):
+        return self.description
+
+
+class HouseBlend(Beverage):
+    """Concrete component"""
+
+    description = 'House Blend Coffee'
+    price = 0.89
 
     def cost(self):
         return self.price
@@ -33,7 +46,6 @@ class CondimentDecorator(Beverage):
     """Base decorator."""
 
     _component = None
-    description = None
 
     def __init__(self, component: Beverage):
         self.component = component
@@ -47,10 +59,10 @@ class CondimentDecorator(Beverage):
         self._component = value
 
     def cost(self):
-        return self.component.cost()
+        return self.price + self.component.cost()
 
     def get_description(self):
-        return f'{self.component.get_description()} + {self.description}'
+        return f'{self.component.get_description()}, {self.description}'
 
 
 class Whip(CondimentDecorator):
@@ -59,22 +71,24 @@ class Whip(CondimentDecorator):
     description = 'Whip'
     price = 0.1
 
-    def cost(self):
-        return self.price + self.component.cost()
-
 
 class Mocha(CondimentDecorator):
     """Concrete decorator."""
 
-    description = 'Chocolate Mocha'
-    price = 0.2
+    description = 'Mocha'
+    price = 0.15
 
-    def cost(self):
-        return self.price + self.component.cost()
+
+class Soy(CondimentDecorator):
+    """Concrete decorator"""
+
+    description = 'Soy'
+    price = 0.2
 
 
 if __name__ == '__main__':
-    bvg = DarkRoast()
-    cafe = Whip(Mocha(bvg))
-    print(cafe.get_description())
-    print(cafe.cost())
+    cafe = Whip(Mocha(DarkRoast()))
+    print(f'{cafe.get_description()} -- ${cafe.cost()}')
+
+    cafe = Whip(Mocha(Mocha(Soy(HouseBlend()))))
+    print(f'{cafe.get_description()} -- ${cafe.cost()}')
